@@ -4,10 +4,12 @@ const dotenv = require("dotenv");
 const app = express();
 const pinRoute = require("./routes/pins");
 const userRoute = require("./routes/users");
-
+const cors = require("cors");
+const PORT = process.env.PORT || 8800;
 dotenv.config();
 
 app.use(express.json());
+app.use(cors());
 
 mongoose.connect(process.env.MONGO_URL)
     .then(() => {
@@ -18,6 +20,6 @@ mongoose.connect(process.env.MONGO_URL)
 app.use("/api/users", userRoute);
 app.use("/api/pins", pinRoute);
 
-app.listen(8800, () => {
+app.listen(PORT, () => {
     console.log("Server is Running !!");
 })

@@ -19,7 +19,7 @@ export default function Register({ setShowRegister }) {
     };
 
     try {
-      await axios.post("/users/register", newUser);
+      await axios.post(process.env.REACT_APP_BASE_URL + "/users/register", newUser);
       setError(false);
       setSuccess(true);
     } catch (err) {
