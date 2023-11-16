@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         // Generate a unique filename for the uploaded file
-        cb(null, `${Date.now()}-${file.originalname}`);
+        cb(null, Date.now() + '_' + file.originalname);
     }
 });
 
@@ -29,7 +29,7 @@ router.post("/", upload.array('images'), async (req, res) => {
             rating,
             lat,
             long,
-            images: images.map(file => file.path)
+            images: images.map(file => file.filename)
         });
         const savedPin = await newPin.save();
 
