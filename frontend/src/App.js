@@ -28,6 +28,8 @@ function App() {
     zoom: 3,
   });
 
+  const [images, setImages] = useState([]);
+
   useEffect(() => {
     const getPins = async () => {
       try {
@@ -60,23 +62,39 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newPin = {
-      username: currentUser,
-      title,
-      desc,
-      rating,
-      lat: newPlace.lat,
-      long: newPlace.long
-    }
 
+    const formData = new FormData();
+    formData.append("username", currentUser);
+    formData.append("title", title);
+    formData.append("desc", desc);
+    formData.append("rating", rating);
+    formData.append("lat", newPlace.lat);
+    formData.append("long", newPlace.long);
+
+    // Append each image file
+    images.forEach((image, index) => {
+      formData.append(`images-${index}`, image);
+    });
+
+    console.log("FormData - ", formData);
     try {
-      const res = await axios.post(process.env.REACT_APP_BASE_URL + "/pins", newPin);
-      setPins(...pins, res.data);
+      const res = await axios.post(process.env.REACT_APP_BASE_URL + "/pins", formData,
+      {
+        headers: {
+        'Content-Type': 'multipart/form-data'
+        },
+      });
+      setPins([...pins, res.data]);
       setNewPlace(null);
+    } catch (err) {
+      console.error("Error while posting pin:", err);
     }
-    catch (err) {
-      console.log(err);
-    }
+  };
+
+  const handleImageUpload = (e) => {
+    const files = e.target.files;
+    const newImages = Array.from(files);
+    setImages(newImages);
   };
 
   const handleLogout = () => {
@@ -157,6 +175,9 @@ function App() {
                 <textarea placeholder="A breif about this place "
                   onChange={(e) => setDesc(e.target.value)}
                 />
+                <label>Images</label>
+                <input type="file" name='images' multiple
+                  onChange={(e) => handleImageUpload(e)} />
                 <label> Rating </label>
                 <select
                   onChange={(e) => setRating(e.target.value)}
