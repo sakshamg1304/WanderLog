@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 //create a pin
-router.post("/", upload.array('images'), async (req, res) => {
+router.post("/", upload.array('images',5), async (req, res) => {
     try {
         const { username, title, desc, rating, lat, long } = req.body;
         const images = req.files;

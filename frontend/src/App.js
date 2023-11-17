@@ -68,22 +68,23 @@ function App() {
     formData.append("title", title);
     formData.append("desc", desc);
     formData.append("rating", rating);
-    formData.append("lat", newPlace.lat);
-    formData.append("long", newPlace.long);
+
+    // Convert lat and long to integers before appending to FormData
+    formData.append("lat", parseInt(newPlace.lat, 10));
+    formData.append("long", parseInt(newPlace.long, 10));
 
     // Append each image file
     images.forEach((image, index) => {
-      formData.append(`images-${index}`, image);
+      formData.append(`images`, image);
     });
 
-    console.log("FormData - ", formData);
     try {
       const res = await axios.post(process.env.REACT_APP_BASE_URL + "/pins", formData,
-      {
-        headers: {
-        'Content-Type': 'multipart/form-data'
-        },
-      });
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+        });
       setPins([...pins, res.data]);
       setNewPlace(null);
     } catch (err) {
@@ -148,6 +149,16 @@ function App() {
                       <Star key={index} className="star" />
                     ))}
                   </div>
+                  { p.images.length>0 &&
+                    <div>
+                      <label> Images </label>
+                      <div className="image">
+                      {p.images.map((image, index) => (
+                      <img key={index} src={`${process.env.REACT_APP_BASE_URL.replace('/api', '')}` + image} alt={`Image ${index}`} />
+                      ))}
+                      </div>
+                    </div>
+                  }
                   <label>Information</label>
                   <span className="username">Created by <b>{p.username}</b></span>
                   <span className="date">{format(p.createdAt)}</span>
