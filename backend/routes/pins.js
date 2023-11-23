@@ -1,5 +1,11 @@
 const router = require("express").Router();
 const Pin = require("../models/Pin");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+dotenv.config();
+
+const secretKey = process.env.secretKey;
+
 
 const multer = require('multer');
 
@@ -16,10 +22,28 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+const authenticateJwt = (req,res,next) => {
+    const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, secretKey, (err, user) => {
+      if (err) {
+        return res.sendStatus(403);
+      }
+      req.user = user;
+      next();
+    });
+  } else {
+    res.sendStatus(401);
+  }
+};
+
+
 //create a pin
-router.post("/", upload.array('images',5), async (req, res) => {
+router.post("/", authenticateJwt, upload.array('images',5), async (req, res) => {
     try {
-        const { username, title, desc, rating, lat, long } = req.body;
+        const username  = req.user.username;
+        const {title, desc, rating, lat, long } = req.body;
         const images = req.files;
 
         const newPin = new Pin({
@@ -41,9 +65,9 @@ router.post("/", upload.array('images',5), async (req, res) => {
 
 // get all pins
 
-router.get("/", async (req, res) => {
+router.get("/", authenticateJwt , async (req, res) => {
     try {
-        const pins = await Pin.find();
+        const pins = await Pin.find({username: req.user.username});
         res.status(200).json(pins);
     } catch (err) {
         res.status(500).json(err);
